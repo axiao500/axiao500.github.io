@@ -14,7 +14,7 @@ website:
           text: Income Inequality
         - href: Dataset2.qmd
           text: Pixar Films
-        - href: Project2.qmd
+        - href: NYT.qmd
           text: New York Times
 
 
