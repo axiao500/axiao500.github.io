@@ -144,5 +144,5 @@ Analyzing the words in these headlines shows a clear shift in what dominated the
 
 One limitation of this analysis is that it only counts how often words appear, not what the headlines say about them. For example, "war" is counted the same way whether a headline is about the Iraq War or a political "war" over a bill. 
 
-- Data: `NYTimes` dataset from the RTextTools R package: <https://github.com/cran/RTextTools>
+- Data: NYTimes dataset from the RTextTools R package: <https://github.com/cran/RTextTools>
 - Original source: New York Times headlines, compiled and hand-labeled by Professor Amber E. Boydstun, University of California, Davis.
