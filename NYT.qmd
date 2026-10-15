@@ -120,7 +120,7 @@ updated_nyt_words |>
 From this visualization, “U.S.” is by far the most common word, appearing about 261 times, roughly twice as often as any other word. The graph also shows that Bush received about twice as much attention as Clinton, even though the two presidents cover roughly the same amount of time in the dataset, with Clinton from 1996 to 2000 and Bush from 2001 to 2006. This suggests that the Bush years produced more front-page news centered on the president, likely because of 9/11 and the Iraq War. In foreign affairs, coverage centered mainly on Iraq, with China appearing to a lesser extent.
 
 While this visual gives a good depiction into what the common language in headlines during this time period was, it is unable to convey the trends in when each word would appear. 
-Therefore, constructing a visual representing the trend in word usage can be beneficial to gain insight into when these words are actually being used. Here we are taking the 5 most common words and tracking them throughout 1996-2006
+Therefore, constructing a visual representing the trend in word usage can be beneficial to gain insight into when these words are actually being used. Here we are taking the 5 most common words and tracking them throughout 1996-2006.
 ```{r}
 nyt_words_clean |>
   mutate(word = fct_lump_n(word, n = 5)) |>
