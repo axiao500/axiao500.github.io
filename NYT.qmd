@@ -77,8 +77,8 @@ top_words <- nyt_words_clean |>
 top_words
 ```
 
-Now we can see a more interesting list of the 15 most used words throughout 1996-2006, but an interesting oversight that occured is that the word york appears 56 times, this obviously is meant to be New York, but the data cleaning split the two words up. 
-We can fix this by implementing a lookaround in our data pipeline to find phrases with the word "new" before a space and "york" after this space, and combine the two into newyork, then the mutate function will turn it back to new york. This ensures we are finding specifc instances on New York together rather than a case where york is on its own
+Now we can see a more interesting list of the 15 most used words throughout 1996-2006. An interesting oversight that occured is that the word "york: appears 56 times, this obviously is meant to be New York, but the data cleaning split the two words up. 
+We can fix this by implementing a lookaround in our data pipeline to find phrases with the word "new" before a space and "york" after this space, and combine the two into newyork, then the mutate function will turn it back to new york. This ensures we are finding specific instances on New York together rather than a case where york is on its own.
 ```{r}
 updated_nyt_words <- NYT |>
   mutate(
@@ -116,6 +116,7 @@ updated_nyt_words |>
     y = NULL
   ) + theme_minimal()
 ```
+
 From this visualization, “U.S.” is by far the most common word, appearing about 261 times, roughly twice as often as any other word. The graph also shows that Bush received about twice as much attention as Clinton, even though the two presidents cover roughly the same amount of time in the dataset, with Clinton from 1996 to 2000 and Bush from 2001 to 2006. This suggests that the Bush years produced more front-page news centered on the president, likely because of 9/11 and the Iraq War. In foreign affairs, coverage centered mainly on Iraq, with China appearing to a lesser extent.
 
 While this visual gives a good depiction into what the common language in headlines during this time period was, it is unable to convey the trends in when each word would appear. 
