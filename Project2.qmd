@@ -1,0 +1,127 @@
+---
+title: "New York Times headlines"
+about: marquee
+description: "Analysis of New York Times headlines"
+execute:
+  echo: true
+  message: false
+  warning: false
+author: Andy Xiao
+format: 
+    html:
+        code-fold: true
+        code-summary: "Show code"
+---
+This page analyzes around 3,100 New York Times headlines from 1996 to 2006. 
+Some aspects we are looking to explore are which words dominated the headlines and how has that vocabulary changes over the decade. 
+First we must load the data and import tidyverse.
+```{r}
+library(tidyverse)
+library(RTextTools)
+data(NYTimes)
+```
+
+The data includes 5 columns and 3,104 rows, the columns include:\
+  - Article_ID: Id for each headlines\
+  - Date: Publication date stored as a string in the for "1-Jan-96"\
+  - Title: Headline\
+  - Subject: Summary of stroy\
+  - Topic.Code: Number for the topic\
+
+From this data, we are most concerned with the Title and Date column. First we must extract the year from each date.
+We can use str_extract to take the last two digits of each date to get the year. Then turn the two digits into the full year using if_else to determine whether the year was in the 1900s or 2000s.
+```{r}
+NYT <- NYTimes |>
+    mutate(
+    yy = as.numeric(str_extract(Date, "\\d{2}$")),
+    year = if_else(yy >= 96, 1900 + yy, 2000 + yy)
+  )
+```
+
+Before we start analyzing the headlines, we must clean the text to cleanly match together strings. For example headlines with IRAQ vs Iraq would be treated differently if not cleaned before.\
+First by lowercasing all words using str_to_lower, we can fix the issue in the example.\
+Then we can remove all possesives in order to better match key words. We do this by using str_remove_all to remove the apostrophe and s if its ending the word with the boundry \\b \
+Lastly we use str_extract all to take in all the words. [a-z]+ extracts most basic words with letters in a row, (['.][a-z]+)* extracts words with periods or apostrophes in them as NYT convention denotes United States as U.S.
+Next we can use the unnest function to put each word in its own row for better extraction
+```{r}
+nyt_words <- NYT |>
+  mutate(
+    word = Title |>
+      str_to_lower() |>
+      str_remove_all("'s\\b") |>
+      str_extract_all("[a-z]+(['.][a-z]+)*")) |>
+  unnest(word)
+```
+
+Now that we have cleaned the words, we can find the top 15 words used through each headline from 1996-2006
+```{r}
+top_words <- nyt_words |>
+  count(word, sort = TRUE) |>
+  slice_max(n, n = 15)
+top_words
+```
+Here we can see an issue where there are many filler words in this list that don't help with our analysis as we are focused on the key words of each headline.
+Therefore we must filter out the filler words.
+By compiling a list of many common filler words we might see in each NYT headline, we can filter out these words to find the most frequent keywords.
+```{r}
+
+filler_words <- c(
+  "the", "a", "an", "of", "in", "to", "and", "for", "on", "at", "by",
+  "with", "as", "is", "it", "its", "from", "that", "this", "be", "are",
+  "was", "were", "has", "have", "will", "not", "or", "but", "after",
+  "over", "into", "up", "out", "more", "says", "say", "said", "than",
+  "who", "what", "how", "why", "when", "about", "new", "no", "overview", "report", "special", "plan", "case", "big", "nation", "city", "may", "his")
+nyt_words_clean <- nyt_words |>
+  filter(!word %in% filler_words)
+top_words <- nyt_words_clean |>
+  count(word, sort = TRUE) |>
+  slice_max(n, n = 15)
+top_words
+```
+
+Now we can see a more interesting list of the 15 most used words throughout 1996-2006, but an interesting oversight that occured is that the word york appears 56 times, this obviously is meant to be New York, 
+but the data cleaning split the two words up. We can fix this by using ifelse to replace york with New York.
+```{r}
+updated_nyt_words <- nyt_words_clean |>
+  mutate(word = ifelse(word == "york", "new york", word))
+top_words <- updated_nyt_words |>
+  count(word, sort = TRUE) |>
+  slice_max(n, n = 15)
+top_words
+```
+
+Now we can construct a visual to show the most common words used in the NYT headlines.
+We can use fct_reorder to order the y axis with most appearances at the top of the diagram.
+```{r}
+updated_nyt_words |>
+  count(word, sort = TRUE) |>
+  slice_max(n, n = 15) |>
+  ggplot(aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "blue") +
+  labs(
+    title = "Most common words in NYT front-page headlines(1996–2006)",
+    x = "Number of times the word appears",
+    y = NULL
+  ) + theme_minimal()
+```
+From this graph we can see that the Bush(2001-2009) administration gathered as mush as twice the attention Clinton(1993-2001) received even though each administration had the same amount of time in the data set. This suggests that Bush from 2001-2006 produced more front page news than Clinton did likely due to the Iraq war and 9/11. Additionally we can see that during this timeframe foriegn affairs news coverage mainly surrounded the Iraq war and slightly to China.
+
+While this visual gives a good depiction into what the common language in headlines during this time period was, it is unable to convey the trends in when each word would appear. 
+Therefore, constructing a visual representing the trend in word usage can be beneficial to gain insight into when these words are actually being used. Here we are taking the 5 most common words and tracking them throughout 1996-2006
+```{r}
+nyt_words_clean |>
+  mutate(word = fct_lump_n(word, n = 5)) |>
+  filter(word != "Other") |>
+  count(year, word) |>
+  ggplot(aes(x = year, y = n, color = word)) +
+  geom_line(linewidth = 1) +
+  scale_x_continuous(breaks = 1996:2006) +
+  labs(
+    title = "Yearly mentions of the top 15 NYT front-page headline words, 1996–2006",
+    x = "Year",
+    y = "Number of mentions",
+    color = "Word"
+  ) +
+  theme_minimal()
+```
+From this visual we can see large spikes in these terms. We can see a large spike in the terms "iraq" and "war" in 2003 due to the start of the Iraq war. Additionally in 1998 there's and unusual spike in usage of "president" in 1998 and this is likely due to the impeachment of Bill Clinton in 1998. Also there are large spikes with the terms "U.S." and "Bush" in 2001 due to 9/11.
