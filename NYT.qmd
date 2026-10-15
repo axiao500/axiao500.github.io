@@ -13,7 +13,7 @@ format:
         code-summary: "Show code"
 ---
 ## Introduction
-This page analyzes about 3,100 New York Times headlines from 1996 to 2006. I explore two questions: which words dominated the headlines during this decade, and how that vocabulary changed over time. The period covers the Clinton impeachment, the 2000 election, 9/11 and the Iraq War, so we would expect the headlines to reflect a shift in the news.
+This page analyzes about 3,100 New York Times headlines from 1996 to 2006. WE explore two questions: which words dominated the headlines during this decade and how that vocabulary changed over time. The period covers the Clinton impeachment, the 2000 election, 9/11 and the Iraq War, so we would expect the headlines to reflect a shift in the news.
 First we must load the data and import tidyverse.
 ```{r}
 library(tidyverse)
@@ -25,7 +25,7 @@ The data includes 5 columns and 3,104 rows, the columns include:\
   - Article_ID: Id for each headlines\
   - Date: Publication date stored as a string in the form "1-Jan-96"\
   - Title: Headline\
-  - Subject: Summary of stroy\
+  - Subject: Summary of story\
   - Topic.Code: Number for the topic\
 
 Because Date is stored as text, we first need to extract the year. str_extract() with the regular expression "\\d{2}$" takes the last two digits of each date. Then if_else() turns the two digits into a full year: values of 96 or higher belong to the 1900s, and everything else belongs to the 2000s. Without this step, years like “03” would sort before “96”.
@@ -39,7 +39,7 @@ NYT <- NYTimes |>
 ## Data Cleaning
 Before analyzing the headlines, we need to clean the text so that the same word is always counted the same way. For example, some headlines are written in all caps, so “IRAQ” and “Iraq” would be treated as different words if left alone.
   - str_to_lower() converts every headline to lowercase, which fixes the capitalization problem.
-  - str_remove_all() removes all possesives in order to better match key words with the pattern "'s\\b" this removes possessives, The \\b (word boundary) makes sure the “‘s” is only removed when it ends a word.
+  - str_remove_all() removes all possesives in order to better match key words with the pattern "'s\\\\b" this removes possessives, The \\b (word boundary) makes sure the “‘s” is only removed when it ends a word.
   - str_extract_all() takes in all the words, [a-z]+ extracts most basic words with letters in a row, (['.][a-z]+)* extracts words with periods or apostrophes in them as NYT convention denotes United States as U.S.
   - unnest() puts each word in its own row, so we can count and filter individual words.
 ```{r}
@@ -60,7 +60,7 @@ top_words <- nyt_words |>
 top_words
 ```
 
-This list is dominated by filler words like “the”, “in” and “to”, which appear in almost every headline and tell us nothing about the news. To find the meaningful words, we filter them out using a list of common filler words.
+This list is dominated by filler words like “the”, “in”, and “to”, which appear in almost every headline and tell us nothing about the news. To find the meaningful words, we filter them out using a list of common filler words.
 ```{r}
 
 filler_words <- c(
