@@ -105,7 +105,7 @@ top_words
 Next, we can construct a visual to show the most common words used in the NYT headlines.
 fct_reorder() orders the bars so that the most frequent word appears at the top.
 ```{r}
-updated_nyt_words |>
+nyt_words_clean |>
   count(word, sort = TRUE) |>
   slice_max(n, n = 15) |>
   ggplot(aes(x = n, y = fct_reorder(word, n))) +

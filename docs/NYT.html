@@ -480,7 +480,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 15 race          39</code></pre>
 </div>
 </div>
-<p>Now we can see a more interesting list of the 15 most used words throughout 1996-2006, but an interesting oversight that occured is that the word york appears 56 times, this obviously is meant to be New York, but the data cleaning split the two words up. We can fix this by implementing a lookaround in our data pipeline to find phrases with the word “new” before a space and “york” after this space, and combine the two into newyork, then the mutate function will turn it back to new york. This ensures we are finding specifc instances on New York together rather than a case where york is on its own</p>
+<p>Now we can see a more interesting list of the 15 most used words throughout 1996-2006. An interesting oversight that occured is that the word “york: appears 56 times, this obviously is meant to be New York, but the data cleaning split the two words up. We can fix this by implementing a lookaround in our data pipeline to find phrases with the word”new” before a space and “york” after this space, and combine the two into newyork, then the mutate function will turn it back to new york. This ensures we are finding specific instances on New York together rather than a case where york is on its own.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
@@ -532,7 +532,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>updated_nyt_words <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>nyt_words_clean <span class="sc">|&gt;</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(word, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(n, <span class="at">n =</span> <span class="dv">15</span>) <span class="sc">|&gt;</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> n, <span class="at">y =</span> <span class="fu">fct_reorder</span>(word, n))) <span class="sc">+</span></span>
@@ -552,7 +552,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>From this visualization, “U.S.” is by far the most common word, appearing about 261 times, roughly twice as often as any other word. The graph also shows that Bush received about twice as much attention as Clinton, even though the two presidents cover roughly the same amount of time in the dataset, with Clinton from 1996 to 2000 and Bush from 2001 to 2006. This suggests that the Bush years produced more front-page news centered on the president, likely because of 9/11 and the Iraq War. In foreign affairs, coverage centered mainly on Iraq, with China appearing to a lesser extent.</p>
-<p>While this visual gives a good depiction into what the common language in headlines during this time period was, it is unable to convey the trends in when each word would appear. Therefore, constructing a visual representing the trend in word usage can be beneficial to gain insight into when these words are actually being used. Here we are taking the 5 most common words and tracking them throughout 1996-2006</p>
+<p>While this visual gives a good depiction into what the common language in headlines during this time period was, it is unable to convey the trends in when each word would appear. Therefore, constructing a visual representing the trend in word usage can be beneficial to gain insight into when these words are actually being used. Here we are taking the 5 most common words and tracking them throughout 1996-2006.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
