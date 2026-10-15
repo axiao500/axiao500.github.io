@@ -1,7 +1,7 @@
 ---
 title: "New York Times headlines"
 about: marquee
-description: "Analysis of New York Times headlines"
+description: "How the vocabulary of New York Times headlines shifted from 1996 to 2006"
 execute:
   echo: true
   message: false
@@ -12,8 +12,8 @@ format:
         code-fold: true
         code-summary: "Show code"
 ---
-This page analyzes around 3,100 New York Times headlines from 1996 to 2006. 
-Some aspects we are looking to explore are which words dominated the headlines and how has that vocabulary changes over the decade. 
+## Introduction
+This page analyzes about 3,100 New York Times headlines from 1996 to 2006. I explore two questions: which words dominated the headlines during this decade, and how that vocabulary changed over time. The period covers the Clinton impeachment, the 2000 election, 9/11 and the Iraq War, so we would expect the headlines to reflect a shift in the news.
 First we must load the data and import tidyverse.
 ```{r}
 library(tidyverse)
@@ -23,13 +23,12 @@ data(NYTimes)
 
 The data includes 5 columns and 3,104 rows, the columns include:\
   - Article_ID: Id for each headlines\
-  - Date: Publication date stored as a string in the for "1-Jan-96"\
+  - Date: Publication date stored as a string in the form "1-Jan-96"\
   - Title: Headline\
   - Subject: Summary of stroy\
   - Topic.Code: Number for the topic\
 
-From this data, we are most concerned with the Title and Date column. First we must extract the year from each date.
-We can use str_extract to take the last two digits of each date to get the year. Then turn the two digits into the full year using if_else to determine whether the year was in the 1900s or 2000s.
+Because Date is stored as text, we first need to extract the year. str_extract() with the regular expression "\\d{2}$" takes the last two digits of each date. Then if_else() turns the two digits into a full year: values of 96 or higher belong to the 1900s, and everything else belongs to the 2000s. Without this step, years like “03” would sort before “96”.
 ```{r}
 NYT <- NYTimes |>
     mutate(
@@ -37,12 +36,12 @@ NYT <- NYTimes |>
     year = if_else(yy >= 96, 1900 + yy, 2000 + yy)
   )
 ```
-
-Before we start analyzing the headlines, we must clean the text to cleanly match together strings. For example headlines with IRAQ vs Iraq would be treated differently if not cleaned before.\
-First by lowercasing all words using str_to_lower, we can fix the issue in the example.\
-Then we can remove all possesives in order to better match key words. We do this by using str_remove_all to remove the apostrophe and s if its ending the word with the boundry \\b \
-Lastly we use str_extract all to take in all the words. [a-z]+ extracts most basic words with letters in a row, (['.][a-z]+)* extracts words with periods or apostrophes in them as NYT convention denotes United States as U.S.
-Next we can use the unnest function to put each word in its own row for better extraction
+## Data Cleaning
+Before analyzing the headlines, we need to clean the text so that the same word is always counted the same way. For example, some headlines are written in all caps, so “IRAQ” and “Iraq” would be treated as different words if left alone.
+  - str_to_lower() converts every headline to lowercase, which fixes the capitalization problem.
+  - str_remove_all() removes all possesives in order to better match key words with the pattern "'s\\b" this removes possessives, The \\b (word boundary) makes sure the “‘s” is only removed when it ends a word.
+  - str_extract_all() takes in all the words, [a-z]+ extracts most basic words with letters in a row, (['.][a-z]+)* extracts words with periods or apostrophes in them as NYT convention denotes United States as U.S.
+  - unnest() puts each word in its own row, so we can count and filter individual words.
 ```{r}
 nyt_words <- NYT |>
   mutate(
@@ -60,9 +59,8 @@ top_words <- nyt_words |>
   slice_max(n, n = 15)
 top_words
 ```
-Here we can see an issue where there are many filler words in this list that don't help with our analysis as we are focused on the key words of each headline.
-Therefore we must filter out the filler words.
-By compiling a list of many common filler words we might see in each NYT headline, we can filter out these words to find the most frequent keywords.
+
+This list is dominated by filler words like “the”, “in” and “to”, which appear in almost every headline and tell us nothing about the news. To find the meaningful words, we filter them out using a list of common filler words.
 ```{r}
 
 filler_words <- c(
@@ -79,19 +77,33 @@ top_words <- nyt_words_clean |>
 top_words
 ```
 
-Now we can see a more interesting list of the 15 most used words throughout 1996-2006, but an interesting oversight that occured is that the word york appears 56 times, this obviously is meant to be New York, 
-but the data cleaning split the two words up. We can fix this by using ifelse to replace york with New York.
+Now we can see a more interesting list of the 15 most used words throughout 1996-2006, but an interesting oversight that occured is that the word york appears 56 times, this obviously is meant to be New York, but the data cleaning split the two words up. 
+We can fix this by implementing a lookaround in our data pipeline to find phrases with the word "new" before a space and "york" after this space, and combine the two into newyork, then the mutate function will turn it back to new york. This ensures we are finding specifc instances on New York together rather than a case where york is on its own
 ```{r}
-updated_nyt_words <- nyt_words_clean |>
-  mutate(word = ifelse(word == "york", "new york", word))
-top_words <- updated_nyt_words |>
+updated_nyt_words <- NYT |>
+  mutate(
+    word = Title |>
+      str_to_lower() |>
+      str_replace_all("(?<=\\bnew) (?=york\\b)", "") |>
+      str_remove_all("'s\\b") |>
+      str_extract_all("[a-z]+(['.][a-z]+)*")
+  ) |>
+  unnest(word) |>
+  mutate(word = if_else(word == "newyork", "new york", word))
+
+nyt_words_clean <- updated_nyt_words |>
+  filter(!word %in% filler_words)
+
+top_words <- nyt_words_clean |>
   count(word, sort = TRUE) |>
   slice_max(n, n = 15)
+
 top_words
 ```
 
-Now we can construct a visual to show the most common words used in the NYT headlines.
-We can use fct_reorder to order the y axis with most appearances at the top of the diagram.
+## Visuals
+Next, we can construct a visual to show the most common words used in the NYT headlines.
+fct_reorder() orders the bars so that the most frequent word appears at the top.
 ```{r}
 updated_nyt_words |>
   count(word, sort = TRUE) |>
@@ -104,7 +116,7 @@ updated_nyt_words |>
     y = NULL
   ) + theme_minimal()
 ```
-From this graph we can see that the Bush(2001-2009) administration gathered as mush as twice the attention Clinton(1993-2001) received even though each administration had the same amount of time in the data set. This suggests that Bush from 2001-2006 produced more front page news than Clinton did likely due to the Iraq war and 9/11. Additionally we can see that during this timeframe foriegn affairs news coverage mainly surrounded the Iraq war and slightly to China.
+From this visualization, “U.S.” is by far the most common word, appearing about 261 times, roughly twice as often as any other word. The graph also shows that Bush received about twice as much attention as Clinton, even though the two presidents cover roughly the same amount of time in the dataset, with Clinton from 1996 to 2000 and Bush from 2001 to 2006. This suggests that the Bush years produced more front-page news centered on the president, likely because of 9/11 and the Iraq War. In foreign affairs, coverage centered mainly on Iraq, with China appearing to a lesser extent.
 
 While this visual gives a good depiction into what the common language in headlines during this time period was, it is unable to convey the trends in when each word would appear. 
 Therefore, constructing a visual representing the trend in word usage can be beneficial to gain insight into when these words are actually being used. Here we are taking the 5 most common words and tracking them throughout 1996-2006
@@ -117,7 +129,7 @@ nyt_words_clean |>
   geom_line(linewidth = 1) +
   scale_x_continuous(breaks = 1996:2006) +
   labs(
-    title = "Yearly mentions of the top 15 NYT front-page headline words, 1996–2006",
+    title = "Yearly mentions of the top 5 NYT front-page headline words, 1996–2006",
     x = "Year",
     y = "Number of mentions",
     color = "Word"
@@ -125,3 +137,12 @@ nyt_words_clean |>
   theme_minimal()
 ```
 From this visual we can see large spikes in these terms. We can see a large spike in the terms "iraq" and "war" in 2003 due to the start of the Iraq war. Additionally in 1998 there's and unusual spike in usage of "president" in 1998 and this is likely due to the impeachment of Bill Clinton in 1998. Also there are large spikes with the terms "U.S." and "Bush" in 2001 due to 9/11.
+
+## Conclusion
+
+Analyzing the words in these headlines shows a clear shift in what dominated the New York Times between 1996 and 2006. In the late 1990s, headlines focused mainly on domestic politics, such the impeachment of Bill Clinton, which caused the spike in "president" in 1998. After 2001, the focus shifted toward 9/11, the Bush administration and the Iraq War, with "Iraq" and "war" peaking in 2003. 
+
+One limitation of this analysis is that it only counts how often words appear, not what the headlines say about them. For example, "war" is counted the same way whether a headline is about the Iraq War or a political "war" over a bill. 
+
+- Data: `NYTimes` dataset from the RTextTools R package: <https://github.com/cran/RTextTools>
+- Original source: New York Times headlines, compiled and hand-labeled by Professor Amber E. Boydstun, University of California, Davis.

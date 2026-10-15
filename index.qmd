@@ -6,9 +6,10 @@ about:
     image-shape: round
     image-width: 14em
     links:
-    - icon: github
-    - href: https://github.com/axiao500/DS002Website
+      - icon: github
+        text: GitHub
+        href: https://axiao500.github.io/
 ---
 
-Hi, I'm Andy Xiao, a Computer Science and Economics student at Pomona College. I also play soccer on the Pomona-Pitzer mens team.
+Hi, I'm Andy Xiao, a Computer Science and Economics student at Pomona College. I also play soccer on the Pomona-Pitzer men's team.
 This website is for D2002
