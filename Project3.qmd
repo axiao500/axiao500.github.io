@@ -109,7 +109,7 @@ We can vizualize the highest expected value decision by creating a heatmap given
 ```{r}
 strategy <- hands |>
   group_by(card1, card2, dealer_card, action) |>
-  summarise(ev = mean(result), .groups = "drop") |>
+  summarize(ev = mean(result), .groups = "drop") |>
   pivot_wider(names_from = action, values_from = ev) |>
   mutate(
     best = if_else(hit > stand, "Hit", "Stand")
