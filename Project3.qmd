@@ -10,6 +10,8 @@ author: Andy Xiao
 format: 
     html:
         code-fold: true
+        fig-width: 12
+        fig-height: 8
         code-summary: "Show code"
 ---
 
@@ -31,14 +33,10 @@ is_soft <- function(hand){
     soft = any(hand == 1) && sum(hand) + 10 <= 21
     return(soft)
 }
-    
-cards <- c(1,2, 10)
-is_soft(cards)
 ```
 
 Next, we need to create a function to calculate the dealer's hand. In most Blackjack games the dealer with keep hitting until their hand is greater than or equal to 17. 
 ```{r}
-set.seed(100)
 #deck, 4 10's for the 3 face cards and 10
 cards <- c(1:9, 10, 10, 10, 10)
 dealer <- function(face_up_card){
@@ -49,7 +47,6 @@ dealer <- function(face_up_card){
     }
     return(hand_value(hand))
 }
-dealer(3)
 
 ```
 
@@ -85,9 +82,9 @@ play_hand <- function(p_card1, p_card2, dealer_card, action) {
 }
 ```
 
-Once we have created a function to either hit or stand we can now create a simulation playing blackjack. We can create a dataset using expand_grid to create all possible permuations of player cards, dealer cards, and either standing or hitting. Additionally by making creating a variable reps we can repeat the simulations multiple times, for example if reps is 10, it will produce 10 rows of the same player hand and dealer hand and decision. To get more accurate data we will set reps to 500. After we have created the dataset of all possible permutations we can start simulating each row. Before this we can filter out rows to remove duplicates becuase expand_grid produces rows where card1 is 4 and card2 5 and other rows where card1 is 5 and card2 is 4. To simulate only unique values we use filter(card1 <= card2) which keeps exactly one of the two orders in which the smaller card is first. After getting only rows with unique card values we can simulate the result of each row with the play_hand function with pmap.
+Once we have created a function to either hit or stand we can now create a simulation playing blackjack. We can create a dataset using expand_grid to create all possible permuations of player cards, dealer cards, and either standing or hitting. Additionally by making creating a variable reps we can repeat the simulations multiple times, for example if reps is 10, it will produce 10 rows of the same player hand and dealer hand and decision. To get more accurate data we will set reps to 1000. After we have created the dataset of all possible permutations we can start simulating each row. Before this we can filter out rows to remove duplicates becuase expand_grid produces rows where card1 is 4 and card2 5 and other rows where card1 is 5 and card2 is 4. To simulate only unique values we use filter(card1 <= card2) which keeps exactly one of the two orders in which the smaller card is first. After getting only rows with unique card values we can simulate the result of each row with the play_hand function with pmap.
 ```{r}
-reps <- 500
+reps <- 1000
 set.seed(200)
 hands <- expand_grid(
   card1 = 1:10,
@@ -106,7 +103,7 @@ hands <- expand_grid(
 
 From this simulation we are able to create a dataframe which summarizes the average result of each permutation to find the best decision after being dealt two cards with a dealer card faceup. We can use pivot_wider to turn each hit or stand row into a single row with its expected value. Next we can add a column best which chooses the higher expected value of each decision. 
 
-We can create a 
+We can create a heatmap to vizualize the highest expected value decision given a player's starting hand and what the dealer is showing. We use facet commands to have a 1-1 at the top of the y-axis and making the dealer's card a factor variable to prevent decimal numbers and show each number. We can use geom_title() to create a heatmap 
 ```{r}
 library(tidyverse)
 strategy <- hands |>
@@ -117,16 +114,15 @@ strategy <- hands |>
     best   = if_else(hit > stand, "Hit", "Stand")
   )
 
-#| fig-height: 11
 strategy |>
   mutate(
-    hand = paste(card1, card2, sep = "-"),
-    hand = fct_rev(fct_reorder(hand, card1 * 100 + card2)),
+    hand = str_c(card1, "-", card2),
+    hand = fct_rev(fct_inorder(hand)),
     dealer_card = factor(dealer_card)
   ) |>
   ggplot(aes(x = dealer_card, y = hand, fill = best)) +
   geom_tile(color = "white") +
-  scale_fill_manual(values = c(Hit = "#D55E00", Stand = "#0072B2")) +
+  scale_fill_hue() + 
   labs(
     title = "Best Decision for Every Starting Hand in Blackjack",
     x = "Dealer's face-up card",
@@ -136,3 +132,5 @@ strategy |>
   theme_minimal()
 
 ```
+
+## Conclusion
