@@ -10,16 +10,19 @@ author: Andy Xiao
 format: 
     html:
         code-fold: true
-        fig-width: 12
-        fig-height: 8
+        fig-width: 15
+        fig-height: 15
         code-summary: "Show code"
 ---
-
+## Introduction
 Blackjack, is perhaps one of the most recognizable casino games, seems like a simple game at its core. The dealer deals you two cards and shows one of theirs, each hands comes down to a decision to either hit and recieve another card or stand. This repeated decision is based on a factors such as how likely the dealer is to bust and the likeliness of creating a higher number without going over 21. This decision can be hard for newer players, and in this project, I will explore different simulations of different hands of blackjack to find the best decision in order to maximize profit.
 
-We will start by creating a function to calculate the value of the blackjack hand. An interesting characteristic about Blackjack is that Aces can either be 1 or 11. A hand is considered soft if a hand contains an Ace and has the option to be either a 1 or 11. For example if dealt a hand 5 and 1, the hand is soft because 1 can be turned into 11 without busting. However if given a hand 5, 1, and 9, then the hand is not soft because the 1 cannot be turned into 11 without busting. To keep track of this important charateristic we can create a function to check whether the hand is soft or not. 
+We will start by creating a function to calculate the value of the blackjack hand. An interesting characteristic about Blackjack is that Aces can either be 1 or 11. A hand is considered soft if a hand contains an Ace and has the option to be either a 1 or 11. For example if dealt a hand 5 and 1, the hand is soft because 1 can be turned into 11 without busting. However if given a hand 5, 1, and 9, then the hand is not soft because the 1 cannot be turned into 11 without busting.
+
+# Functions
 ```{r}
 library(tidyverse)
+set.seed(100)
 hand_value <- function(hand){
     total <- sum(hand)
     #checks if it can turn an Ace into an 11
@@ -27,11 +30,6 @@ hand_value <- function(hand){
         total <- total + 10
     }
     return(total)
-}
-
-is_soft <- function(hand){
-    soft = any(hand == 1) && sum(hand) + 10 <= 21
-    return(soft)
 }
 ```
 
@@ -85,7 +83,6 @@ play_hand <- function(p_card1, p_card2, dealer_card, action) {
 Once we have created a function to either hit or stand we can now create a simulation playing blackjack. We can create a dataset using expand_grid to create all possible permuations of player cards, dealer cards, and either standing or hitting. Additionally by making creating a variable reps we can repeat the simulations multiple times, for example if reps is 10, it will produce 10 rows of the same player hand and dealer hand and decision. To get more accurate data we will set reps to 1000. After we have created the dataset of all possible permutations we can start simulating each row. Before this we can filter out rows to remove duplicates becuase expand_grid produces rows where card1 is 4 and card2 5 and other rows where card1 is 5 and card2 is 4. To simulate only unique values we use filter(card1 <= card2) which keeps exactly one of the two orders in which the smaller card is first. After getting only rows with unique card values we can simulate the result of each row with the play_hand function with pmap.
 ```{r}
 reps <- 1000
-set.seed(200)
 hands <- expand_grid(
   card1 = 1:10,
   card2 = 1:10,
@@ -101,6 +98,7 @@ hands <- expand_grid(
 
 ```
 
+## Simulation and Visualization
 From this simulation we are able to create a dataframe which summarizes the average result of each permutation to find the best decision after being dealt two cards with a dealer card faceup. We can use pivot_wider to turn each hit or stand row into a single row with its expected value. Next we can add a column best which chooses the higher expected value of each decision. 
 
 We can create a heatmap to vizualize the highest expected value decision given a player's starting hand and what the dealer is showing. We use facet commands to have a 1-1 at the top of the y-axis and making the dealer's card a factor variable to prevent decimal numbers and show each number. We can use geom_title() to create a heatmap 
@@ -115,6 +113,7 @@ strategy <- hands |>
   )
 
 strategy |>
+
   mutate(
     hand = str_c(card1, "-", card2),
     hand = fct_rev(fct_inorder(hand)),
@@ -129,8 +128,9 @@ strategy |>
     y = "Player's starting hand",
     fill = "Best action"
   ) +
-  theme_minimal()
+  theme_minimal(base_size = 25)
 
 ```
 
 ## Conclusion
+In this project, I created a simulation to find the best decision (hit or stand) for every starting hand in blackjack. By simulating each starting hand 1000 times, I was able to compare the win averages for stand or hit and find the best decision for each hand based on what the dealer is showing. Calulating the highest expected value by hand would have been very difficult and tedious, becuase the dealer's final card depends on random draws and Aces can count as 1 or 11. By simulating the results, it allowed us to skip the tedious math by simply finding the average values. From this simulation begineer Blackjack players can grasp a basic strategy and understand what the best decision they should make. This simulation has its drawbacks though, in many Blackjack games players can also double and split which is not factored in this simulation. Additionally, this simulation only hits 1 time and then stands which means it fails to fully cover actual games which may have multiple hits. Despite these drawbacks, the heatmap visual provides a simple cheatsheet of what the player's first action should be. This heatmap is fairly accurate as there's a higher concentration of stands when the dealer shows cards that frequently go over 21 commonly referred to as bust cards(2-6). Additionally, the visualization suggests to hit when the player's two cards are less than 10 as theres no risk of going over 21, and it suggests standing when the player's card is 17 or above. One inaccuracies however are when the player's cards are small such as 2-2 or 3-3 in which it suggests to stand which is unadvisable. This inaccuarcy is likely because the simulation is only factoring one hit.

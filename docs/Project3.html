@@ -334,9 +334,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
+  <ul class="collapse">
+  <li><a href="#simulation-and-visualization" id="toc-simulation-and-visualization" class="nav-link" data-scroll-target="#simulation-and-visualization">Simulation and Visualization</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<div class="quarto-about-marquee column-page">
+<div class="quarto-about-marquee column-page-left">
   <div class="about-image-container">
   </div>
   <div class="about-contents">
@@ -349,7 +361,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     Simulating Blackjack win rates
   </div>
 </div>
-<div class="quarto-title-meta column-page">
+<div class="quarto-title-meta column-page-left">
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
@@ -357,27 +369,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           </div>
   </div>
   </div>
-</header> <main class="content column-page" id="quarto-document-content">
+</header> <main class="content column-page-left" id="quarto-document-content">
 
+
+<section id="introduction" class="level2">
+<h2 data-anchor-id="introduction">Introduction</h2>
 <p>Blackjack, is perhaps one of the most recognizable casino games, seems like a simple game at its core. The dealer deals you two cards and shows one of theirs, each hands comes down to a decision to either hit and recieve another card or stand. This repeated decision is based on a factors such as how likely the dealer is to bust and the likeliness of creating a higher number without going over 21. This decision can be hard for newer players, and in this project, I will explore different simulations of different hands of blackjack to find the best decision in order to maximize profit.</p>
-<p>We will start by creating a function to calculate the value of the blackjack hand. An interesting characteristic about Blackjack is that Aces can either be 1 or 11. A hand is considered soft if a hand contains an Ace and has the option to be either a 1 or 11. For example if dealt a hand 5 and 1, the hand is soft because 1 can be turned into 11 without busting. However if given a hand 5, 1, and 9, then the hand is not soft because the 1 cannot be turned into 11 without busting. To keep track of this important charateristic we can create a function to check whether the hand is soft or not.</p>
+<p>We will start by creating a function to calculate the value of the blackjack hand. An interesting characteristic about Blackjack is that Aces can either be 1 or 11. A hand is considered soft if a hand contains an Ace and has the option to be either a 1 or 11. For example if dealt a hand 5 and 1, the hand is soft because 1 can be turned into 11 without busting. However if given a hand 5, 1, and 9, then the hand is not soft because the 1 cannot be turned into 11 without busting.</p>
+</section>
+<section id="functions" class="level1">
+<h1>Functions</h1>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>hand_value <span class="ot">&lt;-</span> <span class="cf">function</span>(hand){</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    total <span class="ot">&lt;-</span> <span class="fu">sum</span>(hand)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">#checks if it can turn an Ace into an 11</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">any</span>(hand <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">&amp;&amp;</span> total <span class="sc">+</span> <span class="dv">10</span> <span class="sc">&lt;=</span> <span class="dv">21</span>){</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        total <span class="ot">&lt;-</span> total <span class="sc">+</span> <span class="dv">10</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(total)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>is_soft <span class="ot">&lt;-</span> <span class="cf">function</span>(hand){</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    soft <span class="ot">=</span> <span class="fu">any</span>(hand <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">&amp;&amp;</span> <span class="fu">sum</span>(hand) <span class="sc">+</span> <span class="dv">10</span> <span class="sc">&lt;=</span> <span class="dv">21</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(soft)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">100</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>hand_value <span class="ot">&lt;-</span> <span class="cf">function</span>(hand){</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    total <span class="ot">&lt;-</span> <span class="fu">sum</span>(hand)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">#checks if it can turn an Ace into an 11</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">any</span>(hand <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">&amp;&amp;</span> total <span class="sc">+</span> <span class="dv">10</span> <span class="sc">&lt;=</span> <span class="dv">21</span>){</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        total <span class="ot">&lt;-</span> total <span class="sc">+</span> <span class="dv">10</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(total)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Next, we need to create a function to calculate the dealer’s hand. In most Blackjack games the dealer with keep hitting until their hand is greater than or equal to 17.</p>
@@ -437,20 +451,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>reps <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">200</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>hands <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">card1 =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">card2 =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dealer_card =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">action =</span> <span class="fu">c</span>(<span class="st">"hit"</span>, <span class="st">"stand"</span>),</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">rep =</span> <span class="dv">1</span><span class="sc">:</span>reps</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(card1 <span class="sc">&lt;=</span> card2) <span class="sc">|&gt;</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">result =</span> <span class="fu">pmap_dbl</span>(<span class="fu">list</span>(card1, card2, dealer_card, action), play_hand)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>hands <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">card1 =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">card2 =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">dealer_card =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">action =</span> <span class="fu">c</span>(<span class="st">"hit"</span>, <span class="st">"stand"</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">rep =</span> <span class="dv">1</span><span class="sc">:</span>reps</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(card1 <span class="sc">&lt;=</span> card2) <span class="sc">|&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">result =</span> <span class="fu">pmap_dbl</span>(<span class="fu">list</span>(card1, card2, dealer_card, action), play_hand)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+<section id="simulation-and-visualization" class="level2">
+<h2 data-anchor-id="simulation-and-visualization">Simulation and Visualization</h2>
 <p>From this simulation we are able to create a dataframe which summarizes the average result of each permutation to find the best decision after being dealt two cards with a dealer card faceup. We can use pivot_wider to turn each hit or stand row into a single row with its expected value. Next we can add a column best which chooses the higher expected value of each decision.</p>
 <p>We can create a heatmap to vizualize the highest expected value decision given a player’s starting hand and what the dealer is showing. We use facet commands to have a 1-1 at the top of the y-axis and making the dealer’s card a factor variable to prevent decimal numbers and show each number. We can use geom_title() to create a heatmap</p>
 <div class="cell">
@@ -466,32 +481,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>strategy <span class="sc">|&gt;</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">hand =</span> <span class="fu">str_c</span>(card1, <span class="st">"-"</span>, card2),</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">hand =</span> <span class="fu">fct_rev</span>(<span class="fu">fct_inorder</span>(hand)),</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">dealer_card =</span> <span class="fu">factor</span>(dealer_card)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> dealer_card, <span class="at">y =</span> hand, <span class="at">fill =</span> best)) <span class="sc">+</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>(<span class="at">color =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_hue</span>() <span class="sc">+</span> </span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Best Decision for Every Starting Hand in Blackjack"</span>,</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Dealer's face-up card"</span>,</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Player's starting hand"</span>,</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"Best action"</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">hand =</span> <span class="fu">str_c</span>(card1, <span class="st">"-"</span>, card2),</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">hand =</span> <span class="fu">fct_rev</span>(<span class="fu">fct_inorder</span>(hand)),</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">dealer_card =</span> <span class="fu">factor</span>(dealer_card)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> dealer_card, <span class="at">y =</span> hand, <span class="at">fill =</span> best)) <span class="sc">+</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>(<span class="at">color =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_hue</span>() <span class="sc">+</span> </span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Best Decision for Every Starting Hand in Blackjack"</span>,</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Dealer's face-up card"</span>,</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Player's starting hand"</span>,</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"Best action"</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">25</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Project3_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="1152"></p>
+<p><img src="Project3_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="1440"></p>
 </figure>
 </div>
 </div>
 </div>
+</section>
+<section id="conclusion" class="level2">
+<h2 data-anchor-id="conclusion">Conclusion</h2>
+<p>In this project, I created a simulation to find the best decision (hit or stand) for every starting hand in blackjack. By simulating each starting hand 1000 times, I was able to compare the win averages for stand or hit and find the best decision for each hand based on what the dealer is showing. Calulating the highest expected value by hand would have been very difficult and tedious, becuase the dealer’s final card depends on random draws and Aces can count as 1 or 11. By simulating the results, it allowed us to skip the tedious math by simply finding the average values. From this simulation begineer Blackjack players can grasp a basic strategy and understand what the best decision they should make. This simulation has its drawbacks though, in many Blackjack games players can also double and split which is not factored in this simulation. Additionally, this simulation only hits 1 time and then stands which means it fails to fully cover actual games which may have multiple hits. Despite these drawbacks, the heatmap visual provides a simple cheatsheet of what the player’s first action should be. This heatmap is fairly accurate as there’s a higher concentration of stands when the dealer shows cards that frequently go over 21 commonly referred to as bust cards(2-6). Additionally, the visualization suggests to hit when the player’s two cards are less than 10 as theres no risk of going over 21, and it suggests standing when the player’s card is 17 or above. One inaccuracies however are when the player’s cards are small such as 2-2 or 3-3 in which it suggests to stand which is unadvisable. This inaccuarcy is likely because the simulation is only factoring one hit.</p>
 
 
+</section>
+</section>
 </main> 
   </div>
 </div>
