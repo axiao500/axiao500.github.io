@@ -16,6 +16,8 @@ website:
           text: Pixar Films
         - href: NYT.qmd
           text: New York Times
+        - href: Project3.qmd
+          text: Blackjack
 
 
       
