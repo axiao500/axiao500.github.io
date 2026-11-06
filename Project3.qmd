@@ -14,20 +14,20 @@ format:
         code-summary: "Show code"
 ---
 ## Introduction
-Blackjack is perhaps one of the most recognizable casino games, and at its core it seems simple. The dealer deals you two cards and shows one of theirs, each hand comes down to a decision to either hit and receive another card or stand. That decision depends on factors such as how likely the dealer is to bust and the likeliness of improving your without going over 21. This decision can be hard for newer players.
+Blackjack is perhaps one of the most recognizable casino games, and at its core it seems simple. The dealer deals you two cards and shows one of theirs, each hand comes down to a decision to either hit and receive another card or stand. That decision depends on factors such as how likely the dealer is to bust and the likelihood of improving your hand without going over 21. This decision can be hard for newer players.
 
 In this project, I will use simulation to find the best decision, hit or stand, for every starting hand in blackjack. For every combination of the player’s two starting cards and the dealer’s face-up card, I will simulate 1,000 hands where the player stands and 1,000 hands where the player hits. Averaging the results gives the expected value of each decision, and whichever is higher is the better choice. Finally, I will visualize these decisions as a heatmap that works as a simple strategy chart, and compare it to blackjack basic strategy.
 
 This simulation makes a few simplifying assumptions:
 
-- Cards are drawn from an replenishing deck, so every card is equally likely on every draw
+- Cards are drawn from a replenishing deck, so every card is equally likely on every draw
 - The dealer hits until their total is at least 17
-- Hit takes adds only one card then stands
-- Doubling down and splitting is not included
+- A hit adds only one card, then the player stands”
+- Doubling down and splitting are not included
 
 
 ## Functions
-We start by creating a function to calculate the value of the blackjack hand. An interesting characteristic about Blackjack is that an Ace can count as 1 or 11. A hand is considered soft if a hand contains an Ace and has the option to be either a 1 or 11. For example if dealt a hand 5 and 1, the hand is soft because 1 can be turned into 11 without busting. However if given a hand 5, 1, and 9, then the hand is not soft because the 1 cannot be turned into 11 without busting.
+We start by creating a function to calculate the value of the blackjack hand. An interesting characteristic of blackjack is that an Ace can count as 1 or 11. A hand is considered soft if a hand contains an Ace and has the option to be either a 1 or 11. For example if dealt a hand 5 and 1, the hand is soft because 1 can be turned into 11 without busting. However if given a hand 5, 1, and 9, then the hand is not soft because the 1 cannot be turned into 11 without busting.
 ```{r}
 library(tidyverse)
 set.seed(100)
@@ -56,7 +56,7 @@ dealer <- function(face_up_card){
 
 ```
 
-After finding the value of the dealer and player we need to determine the outcome of the game. We can create a function determining the outcomes by comparing the totals, we will track a player with with 1 and a loss with -1. Since the player goes first a player's bust is checked first.
+After finding the value of the dealer and player we need to determine the outcome of the game. We can create a function determining the outcomes by comparing the totals, we record a win as 1, a push (tie) as 0, and a loss as −1. Since the player goes first a player's bust is checked first.
 ```{r}
 outcome <- function(player, dealer){
     if (player > 21){
@@ -73,7 +73,7 @@ outcome <- function(player, dealer){
 }
 ```
 
-Now that we've developed the basic mechanisms of getting value of hands and outcomes we need to create the actual gameplay loop for the player for if they hit or stand. The play_hand() function takes two players cards, dealers face-up card, and the players action. If the action is hit, another random card is added to the player's cards, and then the dealer plays their hidden cards and outcome determines the result of the game. 
+Now that we've developed the basic mechanisms of getting value of hands and outcomes we need to create a function that plays one hand. The play_hand() function takes the player’s two cards, the dealer’s face-up card, and the player’s action. If the action is hit, another random card is added to the player's cards, and then the dealer plays their hidden cards and outcome determines the result of the game. 
 ```{r}
 play_hand <- function(p_card1, p_card2, dealer_card, action) {
     player_cards <- c(p_card1, p_card2)
@@ -84,7 +84,7 @@ play_hand <- function(p_card1, p_card2, dealer_card, action) {
 }
 ```
 
-Now that we have created a function to either hit or stand we can create a simulation playing blackjack. We can create a dataset using expand_grid to create all possible combinations of the player's cards, dealer's cards, and either standing or hitting. Additionally by making creating a variable reps we can repeat the simulations multiple times, for example if reps is 10, it will produce 10 rows of the same player hand and dealer hand and decision. To get more accurate data we will set reps to 1000. After we have created the dataset of all possible combinations we can start simulating each row. Before this we can filter out rows to remove duplicates becuase expand_grid produces duplicate rows where card1 is 4 and card2 is 5 and other rows where card1 is 5 and card2 is 4. To simulate only unique values we use filter(card1 <= card2) which keeps exactly one of the two orders. After getting only rows with unique card values we can simulate the result of each row with the play_hand function with pmap. The pmap function goes down the dataset row by row simulating play_hand() and stores the outcome in the result column.
+Now that we have created a function to either hit or stand we can create a simulation playing blackjack. We can create a dataset using expand_grid to create all possible combinations of the player's cards, dealer's cards, and either standing or hitting. Additionally by creating a variable reps we can repeat the simulations multiple times, for example if reps is 10, it will produce 10 rows of the same player hand and dealer hand and decision. To get more accurate data we will set reps to 1000. After we have created the dataset of all possible combinations we can start simulating each row. Before this we can filter out rows to remove duplicates because expand_grid produces duplicate rows where card1 is 4 and card2 is 5 and other rows where card1 is 5 and card2 is 4. To simulate only unique values we use filter(card1 <= card2) which keeps exactly one of the two orders. After getting only rows with unique card values we can simulate the result of each row with the play_hand function with pmap. The pmap function goes down the dataset row by row simulating play_hand() and stores the outcome in the result column.
 ```{r}
 reps <- 1000
 hands <- expand_grid(
@@ -103,9 +103,9 @@ hands <- expand_grid(
 ```
 
 ## Simulation and Visualization
-To find the best decision from this simulation we are able to create a dataframe which summarizes the average result of each permutation to find the best decision. The function pivot_wider turns each hit or stand row into a single row with its expected value. Next we can add a column best which chooses the higher expected value of each decision. 
+To find the best decision from this simulation we are able to create a dataframe which summarizes the average result of each combination to find the best decision. The function pivot_wider() turns each hit or stand row into a single row with its expected value. Next we can add a column best which chooses the higher expected value of each decision. The expected value is the average result per hand, which can be read as the average amount won or lost per $1 bet.
 
-We can vizualize the highest expected value decision by creating a heatmap given a player's starting hand and what the dealer is showing. We use factor commands to have a 1-1 at the top of the y-axis and making the dealer's card a factor variable to prevent decimal numbers and show each number. The function geom_title() creates a heatmap.
+We can vizualize the highest expected value decision by creating a heatmap given a player's starting hand and what the dealer is showing. We use factor commands to have a 1-1 at the top of the y-axis and making the dealer's card a factor variable to prevent decimal numbers and show each number. The function geom_tile() creates a heatmap.
 ```{r}
 strategy <- hands |>
   group_by(card1, card2, dealer_card, action) |>
@@ -123,7 +123,6 @@ strategy |>
   ) |>
   ggplot(aes(x = dealer_card, y = hand, fill = best)) +
   geom_tile(color = "white") +
-  scale_fill_hue() + 
   labs(
     title = "Best Decision for Every Starting Hand in Blackjack",
     x = "Dealer's face-up card",
@@ -135,6 +134,6 @@ strategy |>
 ```
 
 ## Results & Conclusion
-In this project, I created a simulation to find the best decision (hit or stand) for every starting hand in blackjack. By simulating each starting hand 1000 times, I was able to compare the win averages for stand or hit and find the best decision. Calulating the highest expected value by hand would have been very difficult and tedious, becuase the dealer's final card depends on random draws and Aces can count as 1 or 11. By simulating the results, it allowed us to skip the tedious math by simply finding the average values. 
+In this project, I created a simulation to find the best decision (hit or stand) for every starting hand in blackjack. By simulating each starting hand 1,000 times, I was able to compare the expected values for stand or hit and find the best decision. Calculating the highest expected value by hand would have been very difficult and tedious, because the dealer’s final total depends on random draws and Aces can count as 1 or 11. By simulating the results, it allowed us to skip the tedious math by simply finding the average values. 
 
-From this simulation, begineer Blackjack players can grasp a basic understanding of the best decision they should make based on the factors. This simulation has its drawbacks though, in many Blackjack games players can also double and split which is not factored in this simulation. Additionally, this simulation only hits 1 time and then stands which means it fails to fully cover actual games which may have multiple hits. Despite these drawbacks, the heatmap visual provides a simple relatively reliable cheatsheet of what the player's first action should be. This heatmap shows a higher concentration of stands when the dealer shows cards that frequently go over 21 commonly referred to as bust cards(2-6). Additionally, the visualization suggests to hit when the player's two cards are less than 10 as theres no risk of going over 21, and it suggests standing when the player's card is 17 or above. One inaccuracy however, is when the player's cards are small such as 2-2 or 3-3 the simulation suggests to stand, this decision is unadvisable. This inaccuarcy is likely because the simulation is only factoring one hit.
+From this simulation, beginner Blackjack players can grasp a basic understanding of the best decision they should make based on the factors. This simulation has its drawbacks though, in many Blackjack games players can also double and split which is not factored in this simulation. Additionally, this simulation only hits 1 time and then stands which means it fails to fully cover actual games which may have multiple hits. Despite these drawbacks, the heatmap visual provides a simple relatively reliable cheatsheet of what the player's first action should be. This heatmap shows a higher concentration of stands when the dealer shows cards that frequently go over 21 commonly referred to as bust cards (2-6). Additionally, the visualization suggests to hit when the player’s total is 11 or less as there’s no risk of going over 21, and it suggests standing when the when the player’s total is 17 or above. One inaccuracy however, is when the player's cards are small such as 2-2 or 3-3 the simulation suggests to stand, this decision is unadvisable. This inaccuracy is likely because the simulation is only factoring one hit.
